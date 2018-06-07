@@ -1,10 +1,11 @@
 // 连接MySQL
 var mysql = require('mysql');
 var pool = mysql.createPool({
-    host: 'localhost',
+    host: '120.78.166.246',
+    port: 3306,
     user: 'root',
-    password: '283319',
-    database: 'marco',
+    password: 'dsbzsw',
+    database: 'blog',
     dateStrings: true
 });
 
