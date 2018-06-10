@@ -9,6 +9,9 @@
 # production
 /build
 
+#dist
+/public/dist
+
 #IDE
 /.vscode
 

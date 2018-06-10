@@ -45,7 +45,7 @@ app.get('/login', function(req, res, next) {
 		res.redirect('/home');
 	}
 	else {
-		res.sendfile(path.join(__dirname, '../public/index.html')); // 发送静态文件
+		res.sendfile(path.join(__dirname, '../public/dist/index.html')); // 发送静态文件
 	}
 });
 

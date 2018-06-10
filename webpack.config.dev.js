@@ -1,15 +1,16 @@
 const webpack = require('webpack');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require("clean-webpack-plugin");
 
 module.exports = {
 	devtool: 'cheap-module-eval-source-map',
-	entry: __dirname + "/app/index.js",
+	entry: __dirname + "/src/index.js",
 	output: {
-		path: __dirname + "/public/script/",
-		filename: "bundle.js",
-		chunkFilename: 'chunk/[name].chunk.js',
-		publicPath: '/script/'
+		path: __dirname + "/public/dist/",
+		filename: "[name]-[hash].js",
+		publicPath: '/dist/'
 	},
 	module: {
 		rules: [{
@@ -32,6 +33,7 @@ module.exports = {
 		]
 	},
 	plugins: [
+		new webpack.HotModuleReplacementPlugin(),
 		new ExtractTextPlugin("../style/style.css", {
 			allChunks: true
 		}), 
@@ -44,6 +46,14 @@ module.exports = {
 				}
 			},
 			canPrint: true
+		}),
+		new HtmlWebpackPlugin({
+            template: __dirname + "/src/index.html" 
+		}),
+		new CleanWebpackPlugin(['dist'], {
+			root: __dirname + '/public',
+			verbose: true,
+			dry: false
 		})
 	]
 }

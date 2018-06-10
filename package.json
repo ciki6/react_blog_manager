@@ -1,22 +1,31 @@
 {
-  "name": "admin",
+  "name": "react_blog_manager",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack --config webpack.config.dev.js --watch",
-    "dll": "cross-env NODE_ENV=production webpack --config dll.config.prod.js",
+    "dev": "webpack --config webpack.config.dev.js",
     "build": "cross-env NODE_ENV=production webpack --config webpack.config.prod.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ciki6/react_blog_manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ciki6/react_blog_manager/issues"
+  },
+  "homepage": "https://github.com/ciki6/react_blog_manager#readme",
   "author": "LuXiaofu",
   "license": "ISC",
   "dependencies": {
     "antd": "^2.12.5",
     "body-parser": "^1.17.2",
+    "clean-webpack-plugin": "^0.1.19",
     "cookie-parser": "^1.4.3",
     "express": "^4.15.4",
     "express-session": "^1.15.5",
     "highlight.js": "^9.12.0",
+    "html-webpack-plugin": "^3.2.0",
     "jade": "^1.11.0",
     "marked": "^0.3.7",
     "md5": "^2.2.1",
