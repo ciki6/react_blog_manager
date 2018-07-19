@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {Form, Input, Button, Select, Checkbox} from 'antd';
 
-import UEditor from '../ueditor';
+import MyEditor from '../ueditor';
 import Markdown from '../markdown';
 
 const FormItem = Form.Item;
@@ -222,7 +222,7 @@ class ArticleDetail extends Component {
 					null
 					:
 					markdown == '0' ?
-					<UEditor content={content} onChange={this.handleChange} editorHandle={this.editorHandle} ue={this.ue} />
+					<MyEditor content={content} onChange={this.handleChange} editorHandle={this.editorHandle} ref="editor"/>
 					:
 					<Markdown content={content} onChange={this.handleChange} preview={preview} />
 				}

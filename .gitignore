@@ -13,7 +13,8 @@
 /public/dist
 
 #IDE
-/.vscode
+/.vscode 
+/.idea
 
 # misc
 .DS_Store

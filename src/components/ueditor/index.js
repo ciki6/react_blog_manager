@@ -1,97 +1,205 @@
 import React, {Component} from 'react';
+import {
+    convertFromRaw,
+    convertToRaw,
+    CompositeDecorator,
+    DefaultDraftBlockRenderMap,
+    ContentState,
+    Editor,
+    EditorState,
+    Entity,
+    RichUtils,
+    getDefaultKeyBinding,
+    KeyBindingUtil,
+    Modifier
+} from 'draft-js';
 
 import './style.scss';
 
-class Ueditor extends Component {
-	componentDidMount() {
-		let script = document.createElement("script");
-		script.setAttribute('src', '/static/ueditor/ueditor.config.js');
-		document.getElementsByTagName('head')[0].appendChild(script);
-		script = document.createElement("script");
-		script.setAttribute('src', '/static/ueditor/ueditor.all.min.js');
-		document.getElementsByTagName('head')[0].appendChild(script);
+export default class MyEditor extends Component {
+	constructor(props){
+        super(props);
+        this.state = {editorState: EditorState.createEmpty()};
 
-		script.onload = () => {
-			var ue = UE.getEditor("container", {
-				UEDITOR_HOME_URL: '/static/ueditor/',
-				serverUrl: '/ueditor',
-				initialFrameHeight: 300,
-				toolbars: [
-					[
-						'undo', //撤销 
-						'redo', //重做 
-						'bold', //加粗 
-						'italic', //斜体 
-						'underline', //下划线 
-						'strikethrough', //删除线 
-						'subscript', //下标 
-						'superscript', //上标 
-						'source', //源代码 
-						'blockquote', //引用 
-						'pasteplain', //纯文本粘贴模式 
-						'horizontal', //分隔线 
-						'removeformat', //清除格式 
-						'unlink', //取消链接 
-						'inserttitle', //插入标题 
-						'simpleupload', //单图上传 
-						'insertimage', //多图上传 
-						'link', //超链接 
-						'emotion', //表情 
-						'spechars', //特殊字符 
-						'searchreplace', //查询替换 
-						'map', //Baidu地图 
-						'insertvideo', //视频 
-						'justifyleft', //居左对齐 
-						'justifyright', //居右对齐 
-						'justifycenter', //居中对齐 
-						'justifyjustify', //两端对齐  
-						'fullscreen', //全屏 
-						'imagecenter', //居中 
-						'edittip ', //编辑提示 
-						'customstyle', //自定义标题 
-						'background', //背景 
-						'scrawl', //涂鸦 
-						'music', //音乐 
-						'inserttable', //插入表格 
-						'drafts', // 从草稿箱加载 
-						'charts', // 图表 
-						'fontfamily', //字体 
-						'fontsize', //字号 
-						'insertcode', //代码语言 
-						'insertorderedlist', //有序列表 
-						'insertunorderedlist', //无序列表
-						'lineheight', //行间距  
-						'rowspacingtop', //段前距 
-						'rowspacingbottom', //段后距 
-						'forecolor', //字体颜色 
-						'backcolor', //背景色              
-						'preview', //预览 
-					]
-				]
-			});
+          this.focus = () => this.refs.editor.focus();
+          this.onChange = (editorState) => this.setState({editorState});
 
-			this.editor = ue;
-
-			ue.addListener( 'contentChange', () => {
-				this.props.onChange(ue.getContent())
-			})
+          this.handleKeyCommand = (command) => this._handleKeyCommand(command);
+          this.onTab = (e) => this._onTab(e);
+          this.toggleBlockType = (type) => this._toggleBlockType(type);
+          this.toggleInlineStyle = (style) => this._toggleInlineStyle(style);
+	}
+	
+	_handleKeyCommand(command) {
+		const {editorState} = this.state;
+		const newState = RichUtils.handleKeyCommand(editorState, command);
+		if (newState) {
+		  this.onChange(newState);
+		  return true;
 		}
-	}
+		return false;
+	  }
 
-	componentWillUnmount() {
-		this.editor.destroy();
-		
-		let child = document.getElementById("edui_fixedlayer")
-		child.parentNode.removeChild(child);
-	}
+	  _onTab(e) {
+		const maxDepth = 4;
+		this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
+	  }
 
-	render() {
+	  _toggleBlockType(blockType) {
+		this.onChange(
+		  RichUtils.toggleBlockType(
+			this.state.editorState,
+			blockType
+		  )
+		);
+	  }
+
+	  _toggleInlineStyle(inlineStyle) {
+		this.onChange(
+		  RichUtils.toggleInlineStyle(
+			this.state.editorState,
+			inlineStyle
+		  )
+		);
+	  }
+
+	  render() {
+		const {editorState} = this.state;
+
+		// If the user changes block type before entering any text, we can
+		// either style the placeholder or hide it. Let's just hide it now.
+		let className = 'RichEditor-editor';
+		var contentState = editorState.getCurrentContent();
+		if (!contentState.hasText()) {
+		  if (contentState.getBlockMap().first().getType() !== 'unstyled') {
+			className += ' RichEditor-hidePlaceholder';
+		  }
+		}
+
 		return (
-			<textarea id="container" name="blog" type="text/plain" onChange={()=>{}}
-				value={this.props.content} style={{margin: "15px 0"}}>
-			</textarea>
-		)
+		  <div className="RichEditor-root">
+			<BlockStyleControls
+			  editorState={editorState}
+			  onToggle={this.toggleBlockType}
+			/>
+			<InlineStyleControls
+			  editorState={editorState}
+			  onToggle={this.toggleInlineStyle}
+			/>
+			<div className={className} onClick={this.focus}>
+			  <Editor
+				blockStyleFn={getBlockStyle}
+				customStyleMap={styleMap}
+				editorState={editorState}
+				handleKeyCommand={this.handleKeyCommand}
+				onChange={this.onChange}
+				onTab={this.onTab}
+				placeholder="Tell a story..."
+				ref="editor"
+				spellCheck={true}
+			  />
+			</div>
+		  </div>
+		);
+	  }
 	}
-}
 
-export default Ueditor;
+	// Custom overrides for "code" style.
+	const styleMap = {
+        CODE: {
+          backgroundColor: 'rgba(0, 0, 0, 0.05)',
+          fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
+          fontSize: 16,
+          padding: 2,
+        },
+      };
+
+      function getBlockStyle(block) {
+        switch (block.getType()) {
+          case 'blockquote': return 'RichEditor-blockquote';
+          default: return null;
+        }
+      }
+
+      class StyleButton extends React.Component {
+        constructor() {
+          super();
+          this.onToggle = (e) => {
+            e.preventDefault();
+            this.props.onToggle(this.props.style);
+          };
+        }
+
+        render() {
+          let className = 'RichEditor-styleButton';
+          if (this.props.active) {
+            className += ' RichEditor-activeButton';
+          }
+
+          return (
+            <span className={className} onMouseDown={this.onToggle}>
+              {this.props.label}
+            </span>
+          );
+        }
+      }
+
+      const BLOCK_TYPES = [
+        {label: 'H1', style: 'header-one'},
+        {label: 'H2', style: 'header-two'},
+        {label: 'H3', style: 'header-three'},
+        {label: 'H4', style: 'header-four'},
+        {label: 'H5', style: 'header-five'},
+        {label: 'H6', style: 'header-six'},
+        {label: 'Blockquote', style: 'blockquote'},
+        {label: 'UL', style: 'unordered-list-item'},
+        {label: 'OL', style: 'ordered-list-item'},
+        {label: 'Code Block', style: 'code-block'},
+      ];
+
+      const BlockStyleControls = (props) => {
+        const {editorState} = props;
+        const selection = editorState.getSelection();
+        const blockType = editorState
+          .getCurrentContent()
+          .getBlockForKey(selection.getStartKey())
+          .getType();
+
+        return (
+          <div className="RichEditor-controls">
+            {BLOCK_TYPES.map((type) =>
+              <StyleButton
+                key={type.label}
+                active={type.style === blockType}
+                label={type.label}
+                onToggle={props.onToggle}
+                style={type.style}
+              />
+            )}
+          </div>
+        );
+      };
+
+      var INLINE_STYLES = [
+        {label: 'Bold', style: 'BOLD'},
+        {label: 'Italic', style: 'ITALIC'},
+        {label: 'Underline', style: 'UNDERLINE'},
+        {label: 'Monospace', style: 'CODE'},
+      ];
+
+      const InlineStyleControls = (props) => {
+        var currentStyle = props.editorState.getCurrentInlineStyle();
+        return (
+          <div className="RichEditor-controls">
+            {INLINE_STYLES.map(type =>
+              <StyleButton
+                key={type.label}
+                active={currentStyle.has(type.style)}
+                label={type.label}
+                onToggle={props.onToggle}
+                style={type.style}
+              />
+            )}
+          </div>
+        );
+      };
