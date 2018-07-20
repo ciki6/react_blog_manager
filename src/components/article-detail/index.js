@@ -90,7 +90,7 @@ class ArticleDetail extends Component {
 			if(err) {
 				return;
 			}
-
+ 
 			let {content = ''} = this.state;
 			if(content.trim() == '') {
 				alert('文章内容为空！');
