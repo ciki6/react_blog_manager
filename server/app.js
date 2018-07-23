@@ -1,18 +1,18 @@
-var express = require('express');
-var session = require('express-session');
+let express = require('express');
+let session = require('express-session');
 
-var path = require('path');
-var logger = require('morgan');
-var ueditor = require('ueditor');
-var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
+let path = require('path');
+let logger = require('morgan');
+let ueditor = require('ueditor');
+let bodyParser = require('body-parser');
+let cookieParser = require('cookie-parser');
 
-var db = require('./db.js');
-var routes = require('./routes/index');
-var user = require('./controller/user');
+let db = require('./db.js');
+let routes = require('./routes/index');
+let user = require('./controller/user');
 
-var app = express();
-var router = express.Router();
+let app = express();
+let router = express.Router();
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

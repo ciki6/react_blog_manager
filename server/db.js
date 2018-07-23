@@ -1,6 +1,6 @@
 // 连接MySQL
-var mysql = require('mysql');
-var pool = mysql.createPool({
+let mysql = require('mysql');
+let pool = mysql.createPool({
     host: '45.76.55.25',
     port: 3306,
     user: 'root',
