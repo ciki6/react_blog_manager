@@ -1,8 +1,12 @@
 import React, {Component} from 'react';
 import {Form, Input, Button, Select, Checkbox} from 'antd';
 
-import MyEditor from '../ueditor';
+// import MyEditor from '../ueditor';
 import Markdown from '../markdown';
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import {Editor} from 'react-draft-wysiwyg';
+import '../article-detail/react-draft-wysiwyg.css';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -12,6 +16,7 @@ class ArticleDetail extends Component {
 		super(props);
 		this.state = {
 			content: '',
+            editorState: EditorState.createEmpty(),
 			markdown: '0',
 			article: {},
 			categories: []
@@ -20,7 +25,7 @@ class ArticleDetail extends Component {
 
 	static contextTypes = {
 		router: React.PropTypes.object
-	}
+	};
 
 	componentDidMount() {
 		fetch("/get-categories", {
@@ -30,7 +35,7 @@ class ArticleDetail extends Component {
 				throw new Error('Load Failed, Status:' + res.status);
 			}
 			res.json().then((data) => {
-				if(data.status == 0) {
+				if(data.status === 0) {
 					this.setState({error: data.message});
 				}
 				else {
@@ -52,11 +57,12 @@ class ArticleDetail extends Component {
 					throw new Error('Load Failed, Status:' + res.status);
 				}
 				res.json().then((data) => {
-					if(data.status == 0) {
+					if(data.status === 0) {
 						this.setState({error: data.message});
 					}
 					else {
 						this.setState({content: data.info.body || ''});
+						this.setState({editorState: data.info.body || ''});
 						this.setState({markdown: data.info.markdown || '0'});
 						this.setState({article: data.info});
 					}
@@ -71,17 +77,24 @@ class ArticleDetail extends Component {
 
 	handleChange = (content) => {
 		this.state.content = content;
-	}
+	};
+
+    onEditorStateChange = (editorState) => {
+        this.setState({
+            editorState : editorState,
+        });
+        this.state.content = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+    };
 
 	handleTypeChange = (value) => {
 		this.setState({markdown: value});
-	}
+	};
 
 	handlePreview = (e) => {
 		this.setState({
 			preview: e.target.checked
 		})
-	}
+	};
 
 	handleSubmit = (e) => {
 		e.preventDefault();
@@ -92,7 +105,7 @@ class ArticleDetail extends Component {
 			}
  
 			let {content = ''} = this.state;
-			if(content.trim() == '') {
+			if(content.trim() === '') {
 				alert('文章内容为空！');
 				return;
 			}
@@ -112,7 +125,7 @@ class ArticleDetail extends Component {
 					throw new Error('Failed, Status:' + res.status);
 				}
 				res.json().then((data) => {
-					if(data.status == 0) {
+					if(data.status === 0) {
 						this.setState({error: data.message});
 					}
 					else {
@@ -129,10 +142,10 @@ class ArticleDetail extends Component {
 				console.log(error);
 			});
 		});
-	}
+	};
 
 	render() {
-		let {markdown, content, preview} = this.state;
+		let {markdown, content, preview, editorState} = this.state;
 		let {title, tag, type, category} = this.state.article;
 		const {getFieldDecorator, getFieldsError, getFieldError, isFieldTouched} = this.props.form;
 
@@ -210,7 +223,7 @@ class ArticleDetail extends Component {
 					</FormItem>
 				}
 				{
-					markdown == '1' ?
+					markdown === '1' ?
 					<FormItem>
 						<Checkbox onChange={this.handlePreview} checked={preview ? true : false}>开启预览</Checkbox>
 					</FormItem>
@@ -221,10 +234,19 @@ class ArticleDetail extends Component {
 					this.props.id && !title ?
 					null
 					:
-					markdown == '0' ?
-					<MyEditor content={content} onChange={this.handleChange} editorHandle={this.editorHandle} ref="editor"/>
+					markdown === '0' ?
+                        <Editor
+                            editorState={editorState}
+                            wrapperClassName="demo-wrapper"
+                            editorClassName="demo-editor"
+                            onEditorStateChange={this.onEditorStateChange}
+                        />
 					:
-					<Markdown content={content} onChange={this.handleChange} preview={preview} />
+						<Markdown
+							content={content}
+							onChange={this.handleChange}
+							preview={preview}
+						/>
 				}
 				<div style={{textAlign: "right"}}>
 					<FormItem>
