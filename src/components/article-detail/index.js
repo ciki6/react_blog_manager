@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import {Form, Input, Button, Select, Checkbox} from 'antd';
 
-// import MyEditor from '../ueditor';
 import Markdown from '../markdown';
 import { EditorState, convertToRaw, ContentState } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
@@ -62,7 +61,7 @@ class ArticleDetail extends Component {
 					}
 					else {
 						this.setState({content: data.info.body || ''});
-						this.setState({editorState: data.info.body || ''});
+						this.setState({editorState: JSON.parse(data.info.body || '')});
 						this.setState({markdown: data.info.markdown || '0'});
 						this.setState({article: data.info});
 					}
@@ -83,7 +82,7 @@ class ArticleDetail extends Component {
         this.setState({
             editorState : editorState,
         });
-        this.state.content = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+        this.state.content = JSON.stringify(editorState);
     };
 
 	handleTypeChange = (value) => {
