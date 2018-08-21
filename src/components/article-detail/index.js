@@ -4,6 +4,7 @@ import {Form, Input, Button, Select, Checkbox} from 'antd';
 import Markdown from '../markdown';
 import { EditorState, convertToRaw, ContentState } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 import {Editor} from 'react-draft-wysiwyg';
 import '../article-detail/react-draft-wysiwyg.css';
 
@@ -60,8 +61,8 @@ class ArticleDetail extends Component {
 						this.setState({error: data.message});
 					}
 					else {
-						this.setState({content: data.info.body || ''});
-						this.setState({editorState: JSON.parse(data.info.body || '')});
+						this.setState({content: EditorState.createWithContent(ContentState.createFromBlockArray(htmlToDraft(data.info.body || '')))});
+						this.setState({editorState: EditorState.createWithContent(ContentState.createFromBlockArray(htmlToDraft(data.info.body || '')))});
 						this.setState({markdown: data.info.markdown || '0'});
 						this.setState({article: data.info});
 					}
@@ -82,7 +83,7 @@ class ArticleDetail extends Component {
         this.setState({
             editorState : editorState,
         });
-        this.state.content = JSON.stringify(editorState);
+        this.state.content = draftToHtml(convertToRaw(editorState.getCurrentContent()));
     };
 
 	handleTypeChange = (value) => {
