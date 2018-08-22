@@ -6,6 +6,9 @@ let logger = require('morgan');
 // let ueditor = require('ueditor');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
+let fs = require('fs');
+let multer  = require('multer');
+let upload = multer({ dest: 'uploads/' });
 
 let db = require('./db.js');
 let routes = require('./routes/index');
@@ -73,27 +76,40 @@ app.use(function(req, res, next) {
 	}
 });
 
-// app.use("/ueditor", ueditor(path.resolve(__dirname, "../../resource"), function(req, res, next) {
-// 	// ueditor 客户发起上传图片请求
-// 	if(req.query.action === 'uploadimage'){
-// 		var foo = req.ueditor,
-// 			img_url = '/images/article';
-//
-// 		res.ue_up(img_url); //你只要输入要保存的地址 。保存操作交给ueditor来做
-// 	}
-//
-// 	//  客户端发起图片列表请求
-// 	else if (req.query.action === 'listimage'){
-// 		var dir_url = '/images/article'; // 要展示给客户端的文件夹路径
-// 		res.ue_list(dir_url) // 客户端会列出 dir_url 目录下的所有图片
-// 	}
-//
-// 	// 客户端发起其它请求
-// 	else {
-// 		res.setHeader('Content-Type', 'application/json');
-// 		res.sendfile(path.join(__dirname, 'common/ueditor.config.json')); // 发送静态文件
-// 	}
-// }));
+app.post("/upload", upload.single('pic-upload'), function(req, res) {
+	// rich test editor upload image request
+  if (!req.file) {
+    res.json({
+      code: 400,
+      message: '上传失败'
+    });
+    return;
+  }
+
+
+// 重命名文件
+  let oldPath = path.join(__dirname, '../'+req.file.path);
+  let newPath = path.join(__dirname, '../public/uploads/' + req.file.originalname);
+  fs.rename(oldPath, newPath, (err) => {
+    console.log(oldPath);
+    console.log(newPath);
+    if (err) {
+      res.json({
+        code: 400,
+        message: '上传失败',
+        err: err
+      });
+    } else {
+      res.json({
+        code: 200,
+        message: '上传成功',
+        data: {
+          link: 'http://localhost:3001/public/uploads/' + req.file.originalname
+        }
+      });
+    }
+  });
+});
 
 
 app.use('/', routes);
