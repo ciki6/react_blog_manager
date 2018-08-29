@@ -70,11 +70,11 @@ router.post('/article-submit', function(req, res, next) {
 	let sql = "";
 	if( id != null) {
 		sql = `update article set body = ${mysql.escape(content)}, title = ${mysql.escape(title)}, tag = ${mysql.escape(tag)}, 
-			category = ${category}, type = ${type}, updated_at = "${new Date().toLocaleDateString()}" where id = ${+id}`;
+			category = ${category}, type = ${type}, updated_at = "${new Date()._format('yyyy-MM-dd')}" where id = ${+id}`;
 	}
 	else {
 		sql = `insert into article(title, tag, category, type, created_at, body, markdown) values (${mysql.escape(title)}, 
-			${mysql.escape(tag)}, ${category}, ${type}, "${new Date().toLocaleDateString()}", ${mysql.escape(content)}, ${markdown})`
+			${mysql.escape(tag)}, ${category}, ${type}, "${new Date()._format('yyyy-MM-dd')}", ${mysql.escape(content)}, ${markdown})`;
 	}
 
 	db.query(sql, function(err, rows) {
@@ -134,11 +134,11 @@ router.post('/gather-submit', function(req, res, next) {
 
 	if(id != null) {
 		sql = `update gather set detail = ${mysql.escape(content)}, title = ${mysql.escape(title)}, 
-			tag = ${mysql.escape(tag)}, updated_at = "${new Date().toLocaleDateString()}" where id = ${+id}`;
+			tag = ${mysql.escape(tag)}, updated_at = "${new Date()._format('yyyy-MM-dd')}" where id = ${+id}`;
 	}
 	else {
 		sql = `insert into gather(title, tag, created_at, detail) values (${mysql.escape(title)}, 
-			${mysql.escape(tag)}, "${new Date().toLocaleDateString()}", ${mysql.escape(content)})`;
+			${mysql.escape(tag)}, "${new Date()._format('yyyy-MM-dd')}", ${mysql.escape(content)})`;
 	}
 	
 	db.query(sql, function(err, rows) {
