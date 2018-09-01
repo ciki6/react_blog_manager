@@ -1,7 +1,12 @@
 import React, {Component} from 'react';
 import {Form, Input, Button, Select} from 'antd';
 
-import Ueditor from '../ueditor';
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
+import {Editor} from 'react-draft-wysiwyg';
+import '../article-detail/react-draft-wysiwyg.css';
+
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -47,7 +52,14 @@ class GatherDetail extends Component {
 	
 	handleChange = (content) => {
 		this.state.content = content;
-	}
+	};
+
+  onEditorStateChange = (editorState) => {
+    this.setState({
+      editorState : editorState,
+    });
+    this.state.content = draftToHtml(convertToRaw(editorState.getCurrentContent()));
+  };
 
 	handleSubmit = (e) => {
 		e.preventDefault();
@@ -97,7 +109,7 @@ class GatherDetail extends Component {
 	}
 
 	render() {
-		let {title, tag, detail} = this.state.gather;
+		let {title, tag,  editorState} = this.state.gather;
 		const {getFieldDecorator, getFieldsError, getFieldError, isFieldTouched} = this.props.form;
 
 		const tagError = isFieldTouched('tag') && getFieldError('tag');
@@ -134,7 +146,19 @@ class GatherDetail extends Component {
 						)
 					}
 					</FormItem>
-					<Ueditor content={detail} onChange={this.handleChange} />
+          <Editor
+            editorState={editorState}
+            wrapperClassName="demo-wrapper"
+            editorClassName="demo-editor"
+            onEditorStateChange={this.onEditorStateChange}
+            toolbar={{
+              inline: { inDropdown: true },
+              list: { inDropdown: true },
+              textAlign: { inDropdown: true },
+              link: { inDropdown: true },
+              history: { inDropdown: true },
+            }}
+          />
 					<div style={{textAlign: "right"}}>
 						<FormItem>
 							<Button type="primary" htmlType="submit">

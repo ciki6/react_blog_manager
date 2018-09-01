@@ -1,8 +1,10 @@
 const webpack = require('webpack');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+const devMode = process.env.NODE_ENV !== 'production';
 
 module.exports = {
 	devtool: 'cheap-module-eval-source-map',
@@ -18,18 +20,19 @@ module.exports = {
 				exclude: /node_modules/,
 				loader: 'babel-loader'
 			}, {
-				test: /\.css$/,
-				use: ExtractTextPlugin.extract({
-					fallback: "style-loader", 
-					use: 'css-loader'
-				})
-			}, {
-				test: /\.scss$/,
-				use: ExtractTextPlugin.extract({
-					fallback: 'style-loader',
-					use: ['css-loader', 'sass-loader']
-				})
-			},{
+      test: /\.(sa|sc|c)ss$/,
+      use: [
+        {
+          loader: MiniCssExtractPlugin.loader,
+          options: {
+            // you can specify a publicPath here
+            // by default it use publicPath in webpackOptions.output
+            publicPath: '../style/'
+          }
+        },
+        "css-loader", 'sass-loader'
+      ]
+    },{
 				test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
 				use: "url-loader?limit=10000&mimetype=application/font-woff"
 			  }, {
@@ -53,9 +56,6 @@ module.exports = {
 			jQuery: "jquery"
 		  }),
 		new webpack.HotModuleReplacementPlugin(),
-		new ExtractTextPlugin("../style/style.css", {
-			allChunks: true
-		}), 
 		new OptimizeCssAssetsPlugin({
 			assetNameRegExp: /.css$/g,
 			cssProcessor: require('cssnano'),
@@ -73,6 +73,12 @@ module.exports = {
 			root: __dirname + '/public',
 			verbose: true,
 			dry: false
-		})
+		}),
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
+      filename: devMode ? '[name].css' : '[name].[hash].css',
+      chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+    })
 	]
 }
