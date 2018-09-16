@@ -105,7 +105,7 @@ app.post("/upload", upload.single('pic-upload'), function(req, res) {
         code: 200,
         message: '上传成功',
         data: {
-          link: 'http://localhost:3001/public/uploads/' + req.file.originalname
+          link: 'http://localhost:3001/uploads/' + req.file.originalname
         }
       });
     }

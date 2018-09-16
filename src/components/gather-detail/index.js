@@ -69,7 +69,7 @@ class GatherDetail extends Component {
 			}
 
 			let {content = ''} = this.state;
-			if(content.trim() == '') {
+			if(content.trim() === '') {
 				alert('收藏内容为空！');
 				return;
 			}
@@ -89,7 +89,7 @@ class GatherDetail extends Component {
 					throw new Error('Failed, Status:' + res.status);
 				}
 				res.json().then((data) => {
-					if(data.status == 0) {
+					if(data.status === 0) {
 						this.setState({error: data.message});
 					}
 					else {
